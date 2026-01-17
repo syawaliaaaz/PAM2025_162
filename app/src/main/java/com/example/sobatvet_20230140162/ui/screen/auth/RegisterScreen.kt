@@ -20,6 +20,15 @@ fun RegisterScreen(
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    
+    // Gunakan Scope untuk navigasi setelah registrasi berhasil (opsional)
+    val registerSuccess = remember { mutableStateOf(false) }
+
+    if (registerSuccess.value) {
+        LaunchedEffect(Unit) {
+            onNavigateToLogin()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -62,7 +71,13 @@ fun RegisterScreen(
 
         CustomButton(
             text = "Daftar Sekarang",
-            onClick = { viewModel.register(name, email, password) }
+            onClick = {
+                if (name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()) {
+                    viewModel.register(name, email, password)
+                    // Set ke true agar pindah ke halaman login setelah klik
+                    registerSuccess.value = true
+                }
+            }
         )
 
         TextButton(onClick = onNavigateToLogin) {

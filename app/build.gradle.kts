@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.sobatvet_20230140162"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.sobatvet_20230140162"
@@ -75,7 +75,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
 
     // Google Maps
-    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation(libs.play.services.maps)
+    implementation(libs.maps.compose)
 
     // Testing
     testImplementation(libs.junit)

@@ -9,7 +9,7 @@ import com.example.sobatvet_20230140162.domain.model.Pet
 import com.example.sobatvet_20230140162.domain.model.Review
 import com.example.sobatvet_20230140162.domain.model.User
 
-fun UserEntity.toDomain() = User(id = 0, email = email, name = name)
+fun UserEntity.toDomain() = User(email = email, name = name, role = role)
 fun PetEntity.toDomain() = Pet(id, name, type, breed, age, ownerEmail)
 fun BookingEntity.toDomain() = Booking(id, petId, date, status, notes)
 fun ReviewEntity.toDomain() = Review(id, bookingId, rating, comment)

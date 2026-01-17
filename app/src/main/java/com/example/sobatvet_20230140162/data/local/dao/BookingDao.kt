@@ -12,6 +12,9 @@ interface BookingDao {
     @Query("SELECT * FROM bookings")
     fun getAllBookings(): Flow<List<BookingEntity>>
 
+    @Query("SELECT * FROM bookings WHERE id = :id LIMIT 1")
+    suspend fun getBookingById(id: Int): BookingEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBooking(booking: BookingEntity)
 

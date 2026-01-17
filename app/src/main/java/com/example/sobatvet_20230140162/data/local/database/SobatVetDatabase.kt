@@ -18,7 +18,7 @@ import com.example.sobatvet_20230140162.data.local.entity.UserEntity
         BookingEntity::class,
         ReviewEntity::class
     ],
-    version = 1
+    version = 2 // Dinaikkan versinya karena ada perubahan skema (Role & Status)
 )
 abstract class SobatVetDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao

@@ -22,6 +22,7 @@ import com.example.sobatvet_20230140162.domain.usecase.pet.GetPetsUseCase
 import com.example.sobatvet_20230140162.domain.usecase.booking.CancelBookingUseCase
 import com.example.sobatvet_20230140162.domain.usecase.booking.CreateBookingUseCase
 import com.example.sobatvet_20230140162.domain.usecase.booking.GetBookingHistoryUseCase
+import com.example.sobatvet_20230140162.domain.usecase.booking.UpdateBookingStatusUseCase
 import com.example.sobatvet_20230140162.ui.navigation.NavGraph
 import com.example.sobatvet_20230140162.ui.theme.SobatVet_20230140162Theme
 import com.example.sobatvet_20230140162.viewmodel.AuthViewModel
@@ -37,7 +38,7 @@ class MainActivity : ComponentActivity() {
         val db = Room.databaseBuilder(
             applicationContext,
             SobatVetDatabase::class.java, "sobatvet-db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
 
         // Repositories
         val userRepository = UserRepository(db.userDao())
@@ -53,11 +54,17 @@ class MainActivity : ComponentActivity() {
         val getBookingHistoryUseCase = GetBookingHistoryUseCase(bookingRepository)
         val createBookingUseCase = CreateBookingUseCase(bookingRepository)
         val cancelBookingUseCase = CancelBookingUseCase(bookingRepository)
+        val updateBookingStatusUseCase = UpdateBookingStatusUseCase(bookingRepository)
 
         // ViewModels
         val authViewModel = AuthViewModel(loginUseCase, registerUseCase)
         val petViewModel = PetViewModel(getPetsUseCase, addPetUseCase, deletePetUseCase)
-        val bookingViewModel = BookingViewModel(getBookingHistoryUseCase, createBookingUseCase, cancelBookingUseCase)
+        val bookingViewModel = BookingViewModel(
+            getBookingHistoryUseCase, 
+            createBookingUseCase, 
+            cancelBookingUseCase,
+            updateBookingStatusUseCase
+        )
 
         setContent {
             SobatVet_20230140162Theme {
