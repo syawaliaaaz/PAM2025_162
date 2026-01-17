@@ -23,8 +23,12 @@ fun DoctorDashboardScreen(
     bookingViewModel: BookingViewModel,
     onLogout: () -> Unit
 ) {
-    // Memberikan tipe eksplisit List<Booking> untuk membantu compiler inferensi tipe data
-    val allBookings: List<Booking> by bookingViewModel.allBookings.collectAsState()
+    val allBookings by bookingViewModel.allBookings.collectAsState()
+
+    // Memuat semua data booking saat layar dibuka
+    LaunchedEffect(Unit) {
+        bookingViewModel.loadAllBookingsForDoctor()
+    }
 
     Scaffold(
         topBar = {
@@ -51,6 +55,7 @@ fun DoctorDashboardScreen(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
+            // Menampilkan yang statusnya Pending
             val pendingBookings = allBookings.filter { it.status == "Pending" }
 
             if (pendingBookings.isEmpty()) {

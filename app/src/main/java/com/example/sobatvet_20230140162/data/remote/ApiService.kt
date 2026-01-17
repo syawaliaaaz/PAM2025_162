@@ -45,4 +45,11 @@ interface ApiService {
 
     @GET("get_bookings.php")
     suspend fun getBookings(@Query("ownerEmail") ownerEmail: String): List<BookingResponse>
+
+    @FormUrlEncoded
+    @POST("update_booking_status.php")
+    suspend fun updateBookingStatus(
+        @Field("id") id: Int,
+        @Field("status") status: String
+    ): BaseResponse
 }

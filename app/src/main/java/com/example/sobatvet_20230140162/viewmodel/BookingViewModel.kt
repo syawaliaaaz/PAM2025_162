@@ -24,7 +24,6 @@ class BookingViewModel(
     private val _bookings = MutableStateFlow<List<Booking>>(emptyList())
     val bookings: StateFlow<List<Booking>> = _bookings.asStateFlow()
     
-    // Menambahkan allBookings agar tidak error di DoctorDashboardScreen
     val allBookings: StateFlow<List<Booking>> = _bookings.asStateFlow()
 
     fun loadBookings(email: String) {
@@ -47,12 +46,9 @@ class BookingViewModel(
         }
     }
 
-    // Fungsi khusus Dokter untuk memuat semua booking dari semua user
     fun loadAllBookingsForDoctor() {
         viewModelScope.launch {
             try {
-                // Kamu bisa membuat endpoint get_all_bookings.php jika diperlukan
-                // Sementara menggunakan parameter kosong atau email admin
                 val response = RetrofitClient.instance.getBookings("ALL") 
                 val mappedBookings = response.map { res ->
                     Booking(
@@ -85,8 +81,16 @@ class BookingViewModel(
 
     fun updateBookingStatus(bookingId: Int, newStatus: String, callbackEmail: String = "ALL") {
         viewModelScope.launch {
-            // Logika update status via API bisa ditambahkan di sini
-            if (callbackEmail == "ALL") loadAllBookingsForDoctor() else loadBookings(callbackEmail)
+            try {
+                // Memanggil API update_booking_status.php
+                val response = RetrofitClient.instance.updateBookingStatus(bookingId, newStatus)
+                if (response.status == "success") {
+                    // Refresh data setelah berhasil update
+                    if (callbackEmail == "ALL") loadAllBookingsForDoctor() else loadBookings(callbackEmail)
+                }
+            } catch (e: Exception) {
+                Log.e("BookingViewModel", "Error updating status: ${e.message}")
+            }
         }
     }
 }
