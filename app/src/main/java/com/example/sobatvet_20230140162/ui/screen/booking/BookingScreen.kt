@@ -51,6 +51,7 @@ fun BookingScreen(
 
     LaunchedEffect(userEmail) {
         petViewModel.loadPets(userEmail)
+        bookingViewModel.loadBookings(userEmail)
     }
 
     // Fungsi untuk membuka Google Maps dengan Tanda (Marker)
@@ -172,14 +173,13 @@ fun BookingScreen(
                     }
                     
                     selectedPet?.let {
-                        val booking = Booking(
-                            id = 0,
+                        // Memanggil ViewModel dengan parameter yang sesuai (petId, date, notes, email)
+                        bookingViewModel.createBooking(
                             petId = it.id,
                             date = selectedDateText,
-                            status = "Pending",
-                            notes = "Dokter: $selectedDoctor | Pasien: ${it.name}"
+                            notes = "Dokter: $selectedDoctor | Pasien: ${it.name}",
+                            ownerEmail = userEmail
                         )
-                        bookingViewModel.createBooking(booking)
                         
                         scope.launch {
                             snackbarHostState.showSnackbar("Booking Berhasil! Menunggu konfirmasi dokter.")

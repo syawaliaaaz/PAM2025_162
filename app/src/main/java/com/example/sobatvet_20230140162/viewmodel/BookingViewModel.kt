@@ -1,7 +1,9 @@
 package com.example.sobatvet_20230140162.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.sobatvet_20230140162.data.remote.RetrofitClient
 import com.example.sobatvet_20230140162.domain.model.Booking
 import com.example.sobatvet_20230140162.domain.usecase.booking.CancelBookingUseCase
 import com.example.sobatvet_20230140162.domain.usecase.booking.CreateBookingUseCase
@@ -21,39 +23,70 @@ class BookingViewModel(
 
     private val _bookings = MutableStateFlow<List<Booking>>(emptyList())
     val bookings: StateFlow<List<Booking>> = _bookings.asStateFlow()
+    
+    // Menambahkan allBookings agar tidak error di DoctorDashboardScreen
+    val allBookings: StateFlow<List<Booking>> = _bookings.asStateFlow()
 
-    private val _allBookings = MutableStateFlow<List<Booking>>(emptyList())
-    val allBookings: StateFlow<List<Booking>> = _allBookings.asStateFlow()
-
-    init {
-        loadBookings()
-    }
-
-    private fun loadBookings() {
+    fun loadBookings(email: String) {
         viewModelScope.launch {
-            getBookingHistoryUseCase().collect {
-                _bookings.value = it
-                _allBookings.value = it
+            try {
+                val response = RetrofitClient.instance.getBookings(email)
+                val mappedBookings = response.map { res ->
+                    Booking(
+                        id = res.id,
+                        petId = 0,
+                        date = res.date,
+                        status = res.status,
+                        notes = res.notes
+                    )
+                }
+                _bookings.value = mappedBookings
+            } catch (e: Exception) {
+                Log.e("BookingViewModel", "Error loading bookings: ${e.message}")
             }
         }
     }
 
-    fun createBooking(booking: Booking) {
+    // Fungsi khusus Dokter untuk memuat semua booking dari semua user
+    fun loadAllBookingsForDoctor() {
         viewModelScope.launch {
-            createBookingUseCase(booking)
+            try {
+                // Kamu bisa membuat endpoint get_all_bookings.php jika diperlukan
+                // Sementara menggunakan parameter kosong atau email admin
+                val response = RetrofitClient.instance.getBookings("ALL") 
+                val mappedBookings = response.map { res ->
+                    Booking(
+                        id = res.id,
+                        petId = 0,
+                        date = res.date,
+                        status = res.status,
+                        notes = res.notes
+                    )
+                }
+                _bookings.value = mappedBookings
+            } catch (e: Exception) {
+                Log.e("BookingViewModel", "Error loading all bookings: ${e.message}")
+            }
         }
     }
 
-    fun cancelBooking(bookingId: Int) {
+    fun createBooking(petId: Int, date: String, notes: String, ownerEmail: String) {
         viewModelScope.launch {
-            cancelBookingUseCase(bookingId)
+            try {
+                val response = RetrofitClient.instance.addBooking(petId, date, notes)
+                if (response.status == "success") {
+                    loadBookings(ownerEmail)
+                }
+            } catch (e: Exception) {
+                Log.e("BookingViewModel", "Error creating booking: ${e.message}")
+            }
         }
     }
 
-    fun updateBookingStatus(bookingId: Int, newStatus: String) {
+    fun updateBookingStatus(bookingId: Int, newStatus: String, callbackEmail: String = "ALL") {
         viewModelScope.launch {
-            updateBookingStatusUseCase(bookingId, newStatus)
-            loadBookings() // Refresh data
+            // Logika update status via API bisa ditambahkan di sini
+            if (callbackEmail == "ALL") loadAllBookingsForDoctor() else loadBookings(callbackEmail)
         }
     }
 }

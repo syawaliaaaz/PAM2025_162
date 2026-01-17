@@ -23,6 +23,7 @@ import com.example.sobatvet_20230140162.ui.screen.booking.BookingScreen
 import com.example.sobatvet_20230140162.ui.screen.history.HistoryScreen
 import com.example.sobatvet_20230140162.ui.screen.profile.ProfileScreen
 import com.example.sobatvet_20230140162.ui.screen.splash.SplashScreen
+import com.example.sobatvet_20230140162.ui.screen.doctor.DoctorDashboardScreen
 import com.example.sobatvet_20230140162.viewmodel.AuthViewModel
 import com.example.sobatvet_20230140162.viewmodel.BookingViewModel
 import com.example.sobatvet_20230140162.viewmodel.PetViewModel
@@ -31,6 +32,7 @@ sealed class Screen(val route: String, val title: String = "", val icon: @Compos
     object Splash : Screen("splash")
     object Login : Screen("login")
     object Register : Screen("register")
+    object DoctorDashboard : Screen("doctor_dashboard")
     
     // Bottom Nav Items
     object Home : Screen("home", "Home", { Icon(Icons.Default.Home, contentDescription = null) })
@@ -49,7 +51,6 @@ fun NavGraph(
     petViewModel: PetViewModel,
     bookingViewModel: BookingViewModel
 ) {
-    // Memberikan tipe data eksplisit pada collectAsState untuk menghindari error inference
     val loggedInUser by authViewModel.loggedInUser.collectAsState(initial = null)
     val userEmail = loggedInUser?.email ?: "user@example.com"
     val userName = loggedInUser?.name ?: "Pemilik Hewan"
@@ -66,6 +67,7 @@ fun NavGraph(
 
     Scaffold(
         bottomBar = {
+            // Tampilkan bottom bar hanya jika bukan di screen Dokter atau Auth
             if (currentRoute in bottomNavItems.map { it.route } || currentRoute == Screen.Profile.route) {
                 NavigationBar {
                     bottomNavItems.forEach { screen ->
@@ -115,8 +117,26 @@ fun NavGraph(
                     viewModel = authViewModel,
                     onNavigateToRegister = { navController.navigate(Screen.Register.route) },
                     onLoginSuccess = {
-                        navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
+                        val role = authViewModel.loggedInUser.value?.role
+                        if (role == "DOCTOR") {
+                            navController.navigate(Screen.DoctorDashboard.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
+                        } else {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Login.route) { inclusive = true }
+                            }
+                        }
+                    }
+                )
+            }
+            composable(Screen.DoctorDashboard.route) {
+                DoctorDashboardScreen(
+                    bookingViewModel = bookingViewModel,
+                    onLogout = {
+                        authViewModel.logout()
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
                         }
                     }
                 )
