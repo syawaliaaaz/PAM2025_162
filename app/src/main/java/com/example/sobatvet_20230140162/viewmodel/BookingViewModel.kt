@@ -49,14 +49,17 @@ class BookingViewModel(
     fun loadAllBookingsForDoctor() {
         viewModelScope.launch {
             try {
+                Log.d("BookingViewModel", "Meminta semua data booking untuk dokter...")
                 val response = RetrofitClient.instance.getBookings("ALL") 
+                Log.d("BookingViewModel", "Data diterima: ${response.size} item")
+                
                 val mappedBookings = response.map { res ->
                     Booking(
                         id = res.id,
                         petId = 0,
                         date = res.date,
-                        status = res.status,
-                        notes = res.notes
+                        status = res.status, // Pastikan ini "Pending" di database
+                        notes = "Pasien: ${res.petName} | ${res.notes}"
                     )
                 }
                 _bookings.value = mappedBookings
@@ -82,10 +85,8 @@ class BookingViewModel(
     fun updateBookingStatus(bookingId: Int, newStatus: String, callbackEmail: String = "ALL") {
         viewModelScope.launch {
             try {
-                // Memanggil API update_booking_status.php
                 val response = RetrofitClient.instance.updateBookingStatus(bookingId, newStatus)
                 if (response.status == "success") {
-                    // Refresh data setelah berhasil update
                     if (callbackEmail == "ALL") loadAllBookingsForDoctor() else loadBookings(callbackEmail)
                 }
             } catch (e: Exception) {
